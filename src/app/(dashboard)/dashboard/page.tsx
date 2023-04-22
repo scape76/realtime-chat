@@ -9,6 +9,14 @@ import { chatHrefConstructor } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 
+type FriendsWithChat = {
+  lastMessage: Message;
+  name: string;
+  email: string;
+  image: string;
+  id: string;
+}[];
+
 const page = async ({}) => {
   const session = await getServerSession(authOptions);
 
@@ -16,7 +24,7 @@ const page = async ({}) => {
 
   const friends = await getFriendsByUserId(session.user.id);
 
-  const friendsWithChat = await Promise.all(
+  const friendsWithChat = (await Promise.all(
     friends.map(async (friend) => {
       let lastMessage;
       const [lastMessageRaw] = (await fetchRedis(
@@ -25,16 +33,17 @@ const page = async ({}) => {
         -1,
         -1
       )) as string[] | undefined[];
-      console.log("lastMessage: ", lastMessageRaw);
       if (lastMessageRaw) {
         lastMessage = JSON.parse(lastMessageRaw) as Message;
+        return {
+          ...friend,
+          lastMessage,
+        };
       }
-      return {
-        ...friend,
-        lastMessage,
-      };
     })
-  );
+  )).filter((f) => f) as FriendsWithChat;;
+
+  console.log(friendsWithChat);
 
   return (
     <div className="container py-12">
