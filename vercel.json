@@ -1,5 +1,5 @@
 {
-  "version": "2.0",
+  "version": 2,
   "env": {
     "APP_ID": "@channels-app-id",
     "KEY": "app-key",
